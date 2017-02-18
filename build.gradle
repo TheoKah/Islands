@@ -1,0 +1,27 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+targetCompatibility = "1.8"
+sourceCompatibility = "1.8"
+version = '1.2'
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Islands',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'http://repo.spongepowered.org/maven'
+    }
+}
+
+dependencies {
+	compile 'org.spongepowered:spongeapi:5.0.0'
+	compile files(
+        'Baubles-1.10.2-1.3.8-deobf'
+    )
+}
