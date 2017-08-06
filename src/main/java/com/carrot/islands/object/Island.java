@@ -35,6 +35,7 @@ public class Island
 
 	private UUID uuid;
 	private String name;
+	private String tag;
 	private boolean isAdmin;
 	private Hashtable<String, Location<World>> spawns;
 	private Rect area;
@@ -44,6 +45,7 @@ public class Island
 	private Hashtable<String, Hashtable<String, Boolean>> perms;
 	private Hashtable<String, Boolean> flags;
 	private Hashtable<UUID, Zone> zones;
+	private int extraspawns;
 	private BiomeType biome;
 	private Hashtable<String, Boolean> unownedCauses;
 
@@ -54,8 +56,10 @@ public class Island
 	{
 		this.uuid = uuid;
 		this.name = name;
+		this.tag = null;
 		this.isAdmin = isAdmin;
 		this.area = area;
+		this.extraspawns = 0;
 		this.biome = BiomeTypes.SKY;
 		this.spawns = new Hashtable<String, Location<World>>();
 		this.president = null;
@@ -95,6 +99,11 @@ public class Island
 
 	public String getName()
 	{
+		return name.replace("_", " ");
+	}
+
+	public String getRealName()
+	{
 		return name;
 	}
 
@@ -102,7 +111,24 @@ public class Island
 	{
 		this.name = name;
 	}
+	
+	public boolean hasTag()
+	{
+		return tag != null;
+	}
 
+	public String getTag()
+	{
+		if (tag == null)
+			return getName();
+		return tag;
+	}
+	
+	public void setTag(String tag)
+	{
+		this.tag = tag;
+	}
+	
 	public boolean isAdmin()
 	{
 		return isAdmin;	
@@ -143,6 +169,37 @@ public class Island
 	public int getNumSpawns()
 	{
 		return spawns.size();
+	}
+
+	public int getMaxSpawns()
+	{
+		return ConfigHandler.getNode("others", "maxNationSpawns").getInt() + extraspawns;
+	}
+
+	public int getExtraSpawns()
+	{
+		return extraspawns;
+	}
+
+	public void setExtraSpawns(int extraspawns)
+	{
+		this.extraspawns = extraspawns;
+		if (this.extraspawns < 0)
+			this.extraspawns = 0;
+	}
+
+	public void addExtraSpawns(int extraspawns)
+	{
+		this.extraspawns += extraspawns;
+		if (this.extraspawns < 0)
+			this.extraspawns = 0;
+	}
+
+	public void removeExtraSpawns(int extraspawns)
+	{
+		this.extraspawns -= extraspawns;
+		if (this.extraspawns < 0)
+			this.extraspawns = 0;
 	}
 
 	public UUID getPresident()
@@ -284,18 +341,6 @@ public class Island
 		return zones;
 	}
 
-	public Zone getZone(String name)
-	{
-		for (Zone zone : zones.values())
-		{
-			if (zone.getName().equalsIgnoreCase(name))
-			{
-				return zone;
-			}
-		}
-		return null;
-	}
-
 	public Zone getZone(Location<World> loc)
 	{
 		Vector2i p = new Vector2i(loc.getBlockX(), loc.getBlockZ());
@@ -333,7 +378,7 @@ public class Island
 			}
 		}
 	}
-	
+
 	public void setBiome(BiomeType biome) {
 		if (this.biome != null && this.biome.equals(biome.getName()))
 			return ;

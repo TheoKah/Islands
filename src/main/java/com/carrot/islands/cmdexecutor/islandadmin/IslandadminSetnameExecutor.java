@@ -36,7 +36,7 @@ public class IslandadminSetnameExecutor implements CommandExecutor
 			src.sendMessage(Text.of(TextColors.RED, LanguageHandler.EL));
 			return CommandResult.success();
 		}
-		if (!newName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}]*"))
+		if (!newName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}\"_\"]*"))
 		{
 			src.sendMessage(Text.of(TextColors.RED, LanguageHandler.EM));
 			return CommandResult.success();
@@ -55,7 +55,7 @@ public class IslandadminSetnameExecutor implements CommandExecutor
 		island.setName(newName);
 		DataHandler.saveIsland(island.getUUID());
 		MessageChannel.TO_ALL.send(Text.of(TextColors.RED,
-				LanguageHandler.FW.replaceAll("\\{OLDNAME\\}", oldName).replaceAll("\\{NEWNAME\\}", newName)));
+				LanguageHandler.FW.replaceAll("\\{OLDNAME\\}", oldName).replaceAll("\\{NEWNAME\\}", island.getName())));
 		return CommandResult.success();
 	}
 }

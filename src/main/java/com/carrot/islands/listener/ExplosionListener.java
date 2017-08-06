@@ -10,7 +10,7 @@ import com.carrot.islands.Debugger;
 
 public class ExplosionListener
 {
-	@Listener(order=Order.FIRST)
+	@Listener(order=Order.FIRST, beforeModifications = true)
 	public void onExplosion(ExplosionEvent.Pre event)
 	{
 		if (!ConfigHandler.getNode("worlds").getNode(event.getTargetWorld().getName()).getNode("enabled").getBoolean())

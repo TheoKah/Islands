@@ -20,7 +20,6 @@ import org.spongepowered.api.world.World;
 import com.carrot.islands.DataHandler;
 import com.carrot.islands.LanguageHandler;
 import com.carrot.islands.IslandsPlugin;
-import com.carrot.islands.Utils;
 import com.carrot.islands.event.PlayerTeleportEvent;
 import com.carrot.islands.object.Island;
 

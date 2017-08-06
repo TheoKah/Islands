@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,6 +23,8 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -34,6 +34,7 @@ import org.spongepowered.api.world.extent.ArchetypeVolume;
 import org.spongepowered.api.world.schematic.BlockPaletteTypes;
 import org.spongepowered.api.world.schematic.Schematic;
 
+import com.carrot.islands.channel.IslandMessageChannel;
 import com.carrot.islands.object.Island;
 import com.carrot.islands.object.Point;
 import com.carrot.islands.object.Rect;
@@ -60,16 +61,15 @@ public class DataHandler
 	private static Hashtable<UUID, Hashtable<Vector2i, ArrayList<Island>>> worldChunks;
 	private static HashMap<UUID, Island> lastIslandWalkedOn;
 	private static HashMap<UUID, Zone> lastZoneWalkedOn;
-	private static HashMap<UUID, Map<Location<World>, HashMap<String, Boolean>>> permCache;
 	private static Hashtable<UUID, Point> firstPoints;
 	private static Hashtable<UUID, Point> secondPoints;
 	private static ArrayList<Request> inviteRequests;
 	private static ArrayList<Request> joinRequests;
 	private static ArrayList<BiomeType> biomes;
+	private static IslandMessageChannel spyChannel;
 
 	public static void init(File rootDir)
 	{
-		permCache = new HashMap<>();
 		biomes = new ArrayList<BiomeType>();
 		schematicFile = new File(rootDir, "island.schematic");
 		islands = new Hashtable<UUID, Island>();
@@ -80,6 +80,7 @@ public class DataHandler
 		secondPoints = new Hashtable<UUID, Point>();
 		inviteRequests = new ArrayList<Request>();
 		joinRequests = new ArrayList<Request>();
+		spyChannel = new IslandMessageChannel();
 		gson = (new GsonBuilder())
 				.registerTypeAdapter(Island.class, new IslandSerializer())
 				.registerTypeAdapter(Island.class, new IslandDeserializer())
@@ -131,6 +132,11 @@ public class DataHandler
 		}
 
 	}
+	
+	public static IslandMessageChannel getSpyChannel()
+	{
+		return spyChannel;
+	}
 
 	// islands
 
@@ -180,7 +186,19 @@ public class DataHandler
 	{
 		for (Island island : islands.values())
 		{
-			if (island.getName().equalsIgnoreCase(name))
+			if (island.getRealName().equalsIgnoreCase(name))
+			{
+				return island;
+			}
+		}
+		return null;
+	}
+	
+	public static Island getIslandByTag(String tag)
+	{
+		for (Island island : islands.values())
+		{
+			if (island.getTag().equalsIgnoreCase(tag))
 			{
 				return island;
 			}
@@ -194,18 +212,16 @@ public class DataHandler
 		{
 			return null;
 		}
-		for (Entry<Vector2i, ArrayList<Island>> e : worldChunks.get(loc.getExtent().getUniqueId()).entrySet())
+		Vector2i area = new Vector2i(IntMath.divide(loc.getBlockX(), 16, RoundingMode.FLOOR), IntMath.divide(loc.getBlockZ(), 16, RoundingMode.FLOOR));
+		if (!worldChunks.get(loc.getExtent().getUniqueId()).containsKey(area))
 		{
-			if (e.getKey().equals(new Vector2i(IntMath.divide(loc.getBlockX(), 16, RoundingMode.FLOOR), IntMath.divide(loc.getBlockZ(), 16, RoundingMode.FLOOR))))
+			return null;
+		}
+		for (Island island : worldChunks.get(loc.getExtent().getUniqueId()).get(area))
+		{
+			if (island.isInside(loc))
 			{
-				for (Island island : e.getValue())
-				{
-					if (island.isInside(loc))
-					{
-						return island;
-					}
-				}
-				return null;
+				return island;
 			}
 		}
 		return null;
@@ -228,6 +244,11 @@ public class DataHandler
 
 	public static void removeIsland(UUID uuid)
 	{
+		Island oldNation = getIsland(uuid);
+		if (oldNation != null) {
+			MessageChannel.TO_CONSOLE.send(Text.of("Removing Island " + uuid + ": "));
+			MessageChannel.TO_CONSOLE.send(Utils.formatIslandDescription(oldNation, Utils.CLICKER_ADMIN));
+		}
 		islands.remove(uuid);
 
 		ArrayList<UUID> toRemove = new ArrayList<>();
@@ -274,19 +295,6 @@ public class DataHandler
 
 	public static boolean getPerm(String perm, UUID playerUUID, Location<World> loc)
 	{
-		if (permCache.containsKey(playerUUID) && permCache.get(playerUUID).containsKey(loc) && permCache.get(playerUUID).get(loc).containsKey(perm)) {
-			return permCache.get(playerUUID).get(loc).get(perm);
-		}
-		boolean ret = getPermReal(perm, playerUUID, loc);
-		
-		return ret;
-	}
-	
-	private static boolean getPermReal(String perm, UUID playerUUID, Location<World> loc)
-	{
-		if (permCache.containsKey(playerUUID) && permCache.get(playerUUID).containsKey(loc) && permCache.get(playerUUID).get(loc).containsKey(perm)) {
-			return permCache.get(playerUUID).get(loc).get(perm);
-		}
 		Island island = getIsland(loc);
 		if (island == null)
 		{
@@ -398,14 +406,22 @@ public class DataHandler
 	{
 		if (!ConfigHandler.getNode("others", "enableIslandRanks").getBoolean())
 		{
-			return LanguageHandler.IS;
+			return "";
 		}
 		Island island = getIslandOfPlayer(uuid);
-		if (island == null || !island.isPresident(uuid))
+		if (island == null)
 		{
-			return LanguageHandler.IS;
+			return LanguageHandler.LR;
 		}
-		return ConfigHandler.getIslandRank(island.getNumCitizens()).getNode("presidentTitle").getString();
+		if (island.isPresident(uuid))
+		{
+			return ConfigHandler.getIslandRank(island.getNumCitizens()).getNode("presidentTitle").getString();
+		}
+		if (island.isPresident(uuid))
+		{
+			return LanguageHandler.LQ;
+		}
+		return LanguageHandler.IS;
 	}
 
 	public static void calculateWorldChunks()

@@ -22,7 +22,7 @@ public class IslandNameElement extends PatternMatchingCommandElement
 				.getIslands()
 				.values()
 				.stream()
-				.map(nation -> nation.getName())
+				.map(nation -> nation.getRealName())
 				.collect(Collectors.toList());
 	}
 

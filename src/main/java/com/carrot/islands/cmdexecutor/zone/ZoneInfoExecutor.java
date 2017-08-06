@@ -43,7 +43,7 @@ public class ZoneInfoExecutor implements CommandExecutor
 				String zoneName = ctx.<String>getOne("zone").get();
 				for (Zone z : island.getZones().values())
 				{
-					if (z.getName().equalsIgnoreCase(zoneName))
+					if (z.isNamed() && z.getRealName().equalsIgnoreCase(zoneName))
 					{
 						zone = z;
 					}

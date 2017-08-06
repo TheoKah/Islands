@@ -26,12 +26,12 @@ public class ConfigHandler
 		configFile = new File(rootDir, "config.conf");
 		configManager = HoconConfigurationLoader.builder().setPath(configFile.toPath()).build();
 	}
-	
+
 	public static void load()
 	{
 		load(null);
 	}
-	
+
 	public static void load(CommandSource src)
 	{
 		// load file
@@ -55,9 +55,9 @@ public class ConfigHandler
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.CY));
 			}
 		}
-		
+
 		// check integrity
-				
+
 		Utils.ensurePositiveNumber(config.getNode("others", "islandRadius"), 256);
 		Utils.ensurePositiveNumber(config.getNode("others", "islandMultiplicatorLocation"), 640);
 		Utils.ensurePositiveNumber(config.getNode("others", "islandHeigth"), 150);
@@ -66,30 +66,44 @@ public class ConfigHandler
 		Utils.ensurePositiveNumber(config.getNode("others", "maxIslandNameLength"), 13);
 		Utils.ensurePositiveNumber(config.getNode("others", "minZoneNameLength"), 3);
 		Utils.ensurePositiveNumber(config.getNode("others", "maxZoneNameLength"), 13);
+		Utils.ensurePositiveNumber(config.getNode("others", "minIslandTagLength"), 3);
+		Utils.ensurePositiveNumber(config.getNode("others", "maxIslandTagLength"), 5);
 		Utils.ensureBoolean(config.getNode("others", "enableIslandRanks"), true);
 		Utils.ensureBoolean(config.getNode("others", "enableIslandTag"), true);
-		Utils.ensureString(config.getNode("others", "gravestoneBlock"), "gravestone:gravestone");	
+		Utils.ensureString(config.getNode("others", "gravestoneBlock"), "gravestone:gravestone");
+		Utils.ensureString(config.getNode("others", "publicChatFormat"), " &r[&3{ISLAND}&r] &5{TITLE} &r");
+		Utils.ensureString(config.getNode("others", "islandChatFormat"), " &r{&eNC&r}");
+		Utils.ensureString(config.getNode("others", "islandSpyChatTag"), " &r[&cSPY&r]");
+
+		Utils.ensureString(config.getNode("toast", "wild"), "&2{WILD} &7- {FORMATPVP}");
+		Utils.ensureString(config.getNode("toast", "island"), "&3{ISLAND}{FORMATPRESIDENT} &7- {FORMATPVP}");
+		Utils.ensureString(config.getNode("toast", "zone"), "&3{NATION}{FORMATPRESIDENT} &7~ {FORMATZONENAME}{FORMATZONEOWNER}{FORMATPVP}");
 		
-		
+		Utils.ensureString(config.getNode("toast", "formatPresident"), "&7 - &e{TITLE} {NAME}");
+		Utils.ensureString(config.getNode("toast", "formatZoneName"), "&a{ARG} &7-");
+		Utils.ensureString(config.getNode("toast", "formatZoneOwner"), "&e{ARG} &7-");
+		Utils.ensureString(config.getNode("toast", "formatPvp"), "&4({ARG})");
+		Utils.ensureString(config.getNode("toast", "formatNoPvp"), "&2({ARG})");
+
 		Utils.ensureBoolean(config.getNode("islands", "flags", "pvp"), false);
 		Utils.ensureBoolean(config.getNode("islands", "flags", "mobs"), false);
 		Utils.ensureBoolean(config.getNode("islands", "flags", "fire"), false);
 		Utils.ensureBoolean(config.getNode("islands", "flags", "explosions"), false);
 		Utils.ensureBoolean(config.getNode("islands", "flags", "open"), false);
 		Utils.ensureBoolean(config.getNode("islands", "flags", "public"), false);
-		
+
 		Utils.ensureBoolean(config.getNode("islands", "perms").getNode(Island.TYPE_OUTSIDER).getNode(Island.PERM_BUILD), false);
 		Utils.ensureBoolean(config.getNode("islands", "perms").getNode(Island.TYPE_OUTSIDER).getNode(Island.PERM_INTERACT), false);
 		Utils.ensureBoolean(config.getNode("islands", "perms").getNode(Island.TYPE_CITIZEN).getNode(Island.PERM_BUILD), false);
 		Utils.ensureBoolean(config.getNode("islands", "perms").getNode(Island.TYPE_CITIZEN).getNode(Island.PERM_INTERACT), true);
-		
+
 		Utils.ensureBoolean(config.getNode("zones", "perms").getNode(Island.TYPE_OUTSIDER).getNode(Island.PERM_BUILD), false);
 		Utils.ensureBoolean(config.getNode("zones", "perms").getNode(Island.TYPE_OUTSIDER).getNode(Island.PERM_INTERACT), false);
 		Utils.ensureBoolean(config.getNode("zones", "perms").getNode(Island.TYPE_CITIZEN).getNode(Island.PERM_BUILD), false);
 		Utils.ensureBoolean(config.getNode("zones", "perms").getNode(Island.TYPE_CITIZEN).getNode(Island.PERM_INTERACT), true);
 		Utils.ensureBoolean(config.getNode("zones", "perms").getNode(Island.TYPE_COOWNER).getNode(Island.PERM_BUILD), true);
 		Utils.ensureBoolean(config.getNode("zones", "perms").getNode(Island.TYPE_COOWNER).getNode(Island.PERM_INTERACT), true);
-		
+
 		if (config.getNode("others", "enableIslandRanks").getBoolean())
 		{
 			if (!config.getNode("islandRanks").hasListChildren() || config.getNode("islandRanks").getChildrenList().isEmpty())
@@ -137,20 +151,20 @@ public class ConfigHandler
 				rank.getNode("presidentTitle").setValue("Leader");
 			}
 		}
-		
+
 		for (World world : Sponge.getServer().getWorlds())
 		{
 			CommentedConfigurationNode node = config.getNode("worlds").getNode(world.getName());
-			
+
 			Utils.ensureBoolean(node.getNode("enabled"), true);
 			if (node.getNode("enabled").getBoolean())
 			{
 
 				Utils.ensurePositiveNumber(node.getNode("nextIsland"), 1);
-				
+
 				Utils.ensureBoolean(node.getNode("perms").getNode(Island.PERM_BUILD), true);
 				Utils.ensureBoolean(node.getNode("perms").getNode(Island.PERM_INTERACT), true);
-				
+
 				Utils.ensureBoolean(node.getNode("flags", "pvp"), true);
 				Utils.ensureBoolean(node.getNode("flags", "mobs"), true);
 				Utils.ensureBoolean(node.getNode("flags", "fire"), true);
@@ -185,7 +199,7 @@ public class ConfigHandler
 	{
 		return config.getNode((Object[]) path);
 	}
-	
+
 	public static CommentedConfigurationNode getIslandRank(int numCitizens)
 	{
 		CommentedConfigurationNode rank = config.getNode("islandRanks")
@@ -193,11 +207,11 @@ public class ConfigHandler
 				.stream()
 				.filter(node -> node.getNode("numCitizens").getInt() <= numCitizens)
 				.max((CommentedConfigurationNode a, CommentedConfigurationNode b) ->
-						Integer.compare(a.getNode("numCitizens").getInt(), b.getNode("numCitizens").getInt()))
+				Integer.compare(a.getNode("numCitizens").getInt(), b.getNode("numCitizens").getInt()))
 				.get();
 		return rank;
 	}
-	
+
 	public static class Utils
 	{
 		public static void ensureString(CommentedConfigurationNode node, String def)
@@ -215,7 +229,7 @@ public class ConfigHandler
 				node.setValue(def);
 			}
 		}
-		
+
 		public static void ensureBoolean(CommentedConfigurationNode node, boolean def)
 		{
 			if (!(node.getValue() instanceof Boolean))

@@ -16,14 +16,12 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
-import org.spongepowered.api.event.block.ChangeBlockEvent.Break;
-import org.spongepowered.api.event.block.ChangeBlockEvent.Place;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
-import org.spongepowered.api.event.world.ExplosionEvent.Pre;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
@@ -72,6 +70,14 @@ public class Debugger {
 		{
 			logs.add(player.getUniqueId().toString());
 			logs.add(player.getName());
+			if (player.getItemInHand(HandTypes.MAIN_HAND).isPresent())
+				logs.add(player.getItemInHand(HandTypes.MAIN_HAND).get().toString());
+			else
+				logs.add("Empty MAIN_HAND");
+			if (player.getItemInHand(HandTypes.OFF_HAND).isPresent())
+				logs.add(player.getItemInHand(HandTypes.MAIN_HAND).get().toString());
+			else
+				logs.add("Empty OFF_HAND");
 			Location<World> playerPos = player.getLocation();
 			logs.add(playerPos.getExtent().getName());
 			logs.add(String.valueOf(playerPos.getBlockX()));

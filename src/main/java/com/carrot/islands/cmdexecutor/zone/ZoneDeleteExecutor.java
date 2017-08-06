@@ -27,15 +27,7 @@ public class ZoneDeleteExecutor implements CommandExecutor
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.DQ));
 				return CommandResult.success();
 			}
-			Zone zone = null;
-			if (ctx.<String>getOne("zone").isPresent())
-			{
-				zone = island.getZone(ctx.<String>getOne("zone").get());
-			}
-			else
-			{
-				zone = island.getZone(player.getLocation());
-			}
+			Zone zone = island.getZone(player.getLocation());
 			if (zone == null)
 			{
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.CF));

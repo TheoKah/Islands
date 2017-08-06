@@ -33,6 +33,8 @@ public class IslandDeserializer implements JsonDeserializer<Island>
 				obj.get("minY").getAsInt(),
 				obj.get("maxY").getAsInt()));
 		island.setBiome(obj.get("biome").getAsString());
+		if (obj.has("tag"))
+			island.setTag(obj.get("tag").getAsString());
 		for (Entry<String, JsonElement> e : obj.get("flags").getAsJsonObject().entrySet())
 		{
 			island.setFlag(e.getKey(), e.getValue().getAsBoolean());
@@ -50,7 +52,12 @@ public class IslandDeserializer implements JsonDeserializer<Island>
 			{
 				JsonObject zoneObj = e.getAsJsonObject();
 				UUID zoneUUID = UUID.fromString(zoneObj.get("uuid").getAsString());
-				String zoneName = zoneObj.get("name").getAsString();
+				String zoneName = null;
+				if (zoneObj.has("name"))
+					zoneName = zoneObj.get("name").getAsString();
+
+				if (zoneObj.has("extraspawns"))
+					island.setExtraSpawns(zoneObj.get("extraspawns").getAsInt());
 				
 				JsonObject rectObj = zoneObj.get("rect").getAsJsonObject();
 				Rect rect = new Rect(

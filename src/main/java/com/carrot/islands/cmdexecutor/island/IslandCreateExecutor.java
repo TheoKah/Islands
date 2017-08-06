@@ -48,7 +48,7 @@ public class IslandCreateExecutor implements CommandExecutor
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.EL));
 				return CommandResult.success();
 			}
-			if (!islandName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}]*"))
+			if (!islandName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}\"_\"]*"))
 			{
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.EM));
 				return CommandResult.success();
@@ -81,7 +81,7 @@ public class IslandCreateExecutor implements CommandExecutor
 			DataHandler.resetPlayer(player);
 			//DataHandler.giveStartKit(player.getInventory());
 			MessageChannel.TO_ALL.send(Text.of(TextColors.AQUA, LanguageHandler.EP.replaceAll("\\{PLAYER\\}", player.getName()).replaceAll("\\{ISLAND\\}", islandName)));
-			src.sendMessage(Text.of(TextColors.GREEN, LanguageHandler.EQ.replaceAll("\\{ISLAND\\}", islandName)));
+			src.sendMessage(Text.of(TextColors.GREEN, LanguageHandler.EQ.replaceAll("\\{ISLAND\\}", island.getName())));
 
 		}
 		else

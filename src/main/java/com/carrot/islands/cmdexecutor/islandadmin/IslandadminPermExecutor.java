@@ -18,9 +18,9 @@ public class IslandadminPermExecutor implements CommandExecutor
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext ctx) throws CommandException
 	{
-		if (!ctx.<String>getOne("island").isPresent() || !ctx.<String>getOne("type").isPresent() || !ctx.<String>getOne("perm").isPresent() || !ctx.<String>getOne("bool").isPresent())
+		if (!ctx.<String>getOne("island").isPresent() || !ctx.<String>getOne("type").isPresent() || !ctx.<String>getOne("perm").isPresent())
 		{
-			src.sendMessage(Text.of(TextColors.YELLOW, "/na perm <island> <type> <perm> <true|false>"));
+			src.sendMessage(Text.of(TextColors.YELLOW, "/na perm <island> <type> <perm> [true|false]"));
 			return CommandResult.success();
 		}
 		String islandName = ctx.<String>getOne("island").get();
@@ -35,7 +35,7 @@ public class IslandadminPermExecutor implements CommandExecutor
 		boolean bool = (ctx.<Boolean>getOne("bool").isPresent()) ? ctx.<Boolean>getOne("bool").get() : !island.getPerm(type, perm);
 		island.setPerm(type, perm, bool);
 		DataHandler.saveIsland(island.getUUID());
-		src.sendMessage(Utils.formatIslandDescription(island, Utils.CLICKER_NONE));
+		src.sendMessage(Utils.formatIslandDescription(island, Utils.CLICKER_ADMIN));
 		return CommandResult.success();
 	}
 }

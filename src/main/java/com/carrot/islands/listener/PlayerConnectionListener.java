@@ -20,6 +20,8 @@ public class PlayerConnectionListener
 			if (island != null)
 				island.getMessageChannel().addMember(player);
 			player.setMessageChannel(MessageChannel.TO_ALL);
+			if (player.hasPermission("islands.admin.spychat"))
+				DataHandler.getSpyChannel().addMember(player);
 		}
 	}
 
@@ -34,6 +36,7 @@ public class PlayerConnectionListener
 			Island island = DataHandler.getIslandOfPlayer(player.getUniqueId());
 			if (island != null)
 				island.getMessageChannel().removeMember(player);
+			DataHandler.getSpyChannel().removeMember(player);
 		}
 	}
 }

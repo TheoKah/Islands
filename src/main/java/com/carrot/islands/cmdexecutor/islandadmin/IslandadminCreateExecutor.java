@@ -38,7 +38,7 @@ public class IslandadminCreateExecutor implements CommandExecutor
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.EL));
 				return CommandResult.success();
 			}
-			if (!islandName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}]*"))
+			if (!islandName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}\"_\"]*"))
 			{
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.EM));
 				return CommandResult.success();

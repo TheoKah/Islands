@@ -18,7 +18,7 @@ public class IslandsService
 		{
 			return Optional.empty();
 		}
-		return Optional.of(island.getName());
+		return Optional.of(island.getRealName());
 	}
 	
 	public Optional<String> getIslandNameAtLocation(Location<World> loc)
@@ -28,7 +28,7 @@ public class IslandsService
 		{
 			return Optional.empty();
 		}
-		return Optional.of(island.getName());
+		return Optional.of(island.getRealName());
 	}
 	
 	public boolean hasIsland(UUID uuid)

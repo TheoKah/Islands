@@ -43,7 +43,12 @@ public class IslandFlagExecutor implements CommandExecutor
 			boolean bool = (ctx.<Boolean>getOne("bool").isPresent()) ? ctx.<Boolean>getOne("bool").get() : !island.getFlag(flag);
 			island.setFlag(flag, bool);
 			DataHandler.saveIsland(island.getUUID());
-			src.sendMessage(Utils.formatIslandDescription(island, Utils.CLICKER_DEFAULT));
+			int clicker = Utils.CLICKER_DEFAULT;
+			if (src.hasPermission("islands.command.islandadmin"))
+			{
+				clicker = Utils.CLICKER_ADMIN;
+			}
+			src.sendMessage(Utils.formatIslandDescription(island, clicker));
 		}
 		else
 		{

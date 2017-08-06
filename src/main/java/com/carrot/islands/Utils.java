@@ -94,7 +94,7 @@ public class Utils
 
 					Text.of(TextColors.GOLD, "\n" + LanguageHandler.ID + ": ", Text.builder(island.getBiomeName()).color(TextColors.YELLOW).onClick(TextActions.runCommand("/is biome")).build()),
 					Text.of(TextColors.DARK_GRAY, " <- " + LanguageHandler.IX),
-					Text.of(TextColors.GOLD, "\n" + LanguageHandler.IG + ": ", TextColors.YELLOW, formatIslandSpawns(island, TextColors.YELLOW, clicker)),
+					Text.of(TextColors.GOLD, "\n" + LanguageHandler.IG + "(", TextColors.YELLOW, + island.getNumSpawns() + "/" + island.getMaxSpawns(), TextColors.GOLD, "): ", TextColors.YELLOW, formatIslandSpawns(island, TextColors.YELLOW, clicker)),
 					Text.of(TextColors.GOLD, "\n" + LanguageHandler.IH + ": "),
 					citizenClickable(TextColors.YELLOW, DataHandler.getPlayerName(island.getPresident())),
 					Text.of(TextColors.DARK_GRAY, " <- " + LanguageHandler.IX));
@@ -186,21 +186,21 @@ public class Utils
 			builder.append(Text.of(TextColors.GOLD, "\n    " + LanguageHandler.IL + ": "));
 			builder.append(Text.builder(LanguageHandler.JD)
 					.color((island.getPerm(Island.TYPE_OUTSIDER, Island.PERM_BUILD)) ? TextColors.GREEN : TextColors.RED)
-					.onClick(TextActions.runCommand("/ia perm " + island.getName() + " " + Island.TYPE_OUTSIDER + " " + Island.PERM_BUILD)).build());
+					.onClick(TextActions.runCommand("/ia perm " + island.getRealName() + " " + Island.TYPE_OUTSIDER + " " + Island.PERM_BUILD)).build());
 			builder.append(Text.of(TextColors.GOLD, "/"));
 			builder.append(Text.builder(LanguageHandler.JE)
 					.color((island.getPerm(Island.TYPE_OUTSIDER, Island.PERM_INTERACT)) ? TextColors.GREEN : TextColors.RED)
-					.onClick(TextActions.runCommand("/ia perm " + island.getName() + " " + Island.TYPE_OUTSIDER + " " + Island.PERM_INTERACT)).build());
+					.onClick(TextActions.runCommand("/ia perm " + island.getRealName() + " " + Island.TYPE_OUTSIDER + " " + Island.PERM_INTERACT)).build());
 			builder.append(Text.of(TextColors.DARK_GRAY, " <- " + LanguageHandler.IX));
 
 			builder.append(Text.of(TextColors.GOLD, "\n    " + LanguageHandler.IJ + ": "));
 			builder.append(Text.builder(LanguageHandler.JD)
 					.color((island.getPerm(Island.TYPE_CITIZEN, Island.PERM_BUILD)) ? TextColors.GREEN : TextColors.RED)
-					.onClick(TextActions.runCommand("/ia perm " + island.getName() + " " + Island.TYPE_CITIZEN + " " + Island.PERM_BUILD)).build());
+					.onClick(TextActions.runCommand("/ia perm " + island.getRealName() + " " + Island.TYPE_CITIZEN + " " + Island.PERM_BUILD)).build());
 			builder.append(Text.of(TextColors.GOLD, "/"));
 			builder.append(Text.builder(LanguageHandler.JE)
 					.color((island.getPerm(Island.TYPE_CITIZEN, Island.PERM_INTERACT)) ? TextColors.GREEN : TextColors.RED)
-					.onClick(TextActions.runCommand("/ia perm " + island.getName() + " " + Island.TYPE_CITIZEN + " " + Island.PERM_INTERACT)).build());
+					.onClick(TextActions.runCommand("/ia perm " + island.getRealName() + " " + Island.TYPE_CITIZEN + " " + Island.PERM_INTERACT)).build());
 			builder.append(Text.of(TextColors.DARK_GRAY, " <- " + LanguageHandler.IX));
 
 			builder.append(Text.of(TextColors.GOLD, "\n" + LanguageHandler.IM + ":"));
@@ -209,9 +209,9 @@ public class Utils
 				if (e.getKey().toLowerCase().equals("mobs"))
 					continue;
 				builder.append(Text.of(TextColors.GOLD, "\n    " + StringUtils.capitalize(e.getKey().toLowerCase()) + ": "));
-				builder.append(Text.builder(LanguageHandler.IT).color((e.getValue()) ? TextColors.YELLOW : TextColors.DARK_GRAY).onClick(TextActions.runCommand("/ia flag " + island.getName() + " " + e.getKey() + " true")).build());
+				builder.append(Text.builder(LanguageHandler.IT).color((e.getValue()) ? TextColors.YELLOW : TextColors.DARK_GRAY).onClick(TextActions.runCommand("/ia flag " + island.getRealName() + " " + e.getKey() + " true")).build());
 				builder.append(Text.of(TextColors.GOLD, "/"));
-				builder.append(Text.builder(LanguageHandler.IU).color((e.getValue()) ? TextColors.DARK_GRAY : TextColors.YELLOW).onClick(TextActions.runCommand("/ia flag " + island.getName() + " " + e.getKey() + " false")).build());
+				builder.append(Text.builder(LanguageHandler.IU).color((e.getValue()) ? TextColors.DARK_GRAY : TextColors.YELLOW).onClick(TextActions.runCommand("/ia flag " + island.getRealName() + " " + e.getKey() + " false")).build());
 				builder.append(Text.of(TextColors.DARK_GRAY, " <- " + LanguageHandler.IX));
 			}
 		}
@@ -240,7 +240,7 @@ public class Utils
 		Island island = DataHandler.getIslandOfPlayer(uuid);
 		if (island != null)
 		{
-			builder.append(islandClickable(TextColors.YELLOW, island.getName()));
+			builder.append(islandClickable(TextColors.YELLOW, island.getRealName()));
 			if (island.isPresident(uuid))
 			{
 				builder.append(Text.of(TextColors.YELLOW, " (" + LanguageHandler.IH + ")"));
@@ -254,7 +254,7 @@ public class Utils
 			boolean ownNothing = true;
 			for (Zone zone : island.getZones().values())
 			{
-				if (uuid.equals(zone.getOwner()))
+				if (uuid.equals(zone.getOwner()) && zone.isNamed())
 				{
 					if (ownNothing)
 					{
@@ -264,7 +264,7 @@ public class Utils
 					{
 						builder.append(Text.of(TextColors.YELLOW, ", "));
 					}
-					builder.append(zoneClickable(TextColors.YELLOW, zone.getName()));
+					builder.append(zoneClickable(TextColors.YELLOW, zone.getRealName()));
 				}
 			}
 			if (ownNothing)
@@ -464,7 +464,7 @@ public class Utils
 					island.getSpawns().keySet().iterator(),
 					Text.builder(),
 					(b) -> b.append(Text.of(TextColors.GRAY, LanguageHandler.IP)),
-					(b, spawnName) -> b.append(Text.builder(spawnName).color(color).onClick(TextActions.runCommand("/is visit " + island.getName() + " " + spawnName)).build()),
+					(b, spawnName) -> b.append(Text.builder(spawnName).color(color).onClick(TextActions.runCommand("/is visit " + island.getRealName() + " " + spawnName)).build()),
 					(b) -> b.append(Text.of(color, ", "))).build();
 		}
 		return structureX(
@@ -494,7 +494,7 @@ public class Utils
 		{
 			return Text.of(color, LanguageHandler.IQ);
 		}
-		return Text.builder(name).color(color).onClick(TextActions.runCommand("/is info " + name)).build();
+		return Text.builder(name.replace("_", " ")).color(color).onClick(TextActions.runCommand("/is info " + name)).build();
 	}
 
 	public static Text citizenClickable(TextColor color, String name)
@@ -521,7 +521,7 @@ public class Utils
 		{
 			return Text.of(color, LanguageHandler.IQ);
 		}
-		return Text.builder(name).color(color).onClick(TextActions.runCommand("/z info " + name)).build();
+		return Text.builder(name.replace("_", " ")).color(color).onClick(TextActions.runCommand("/z info " + name)).build();
 	}
 
 	public static Text worldClickable(TextColor color, String name)

@@ -9,7 +9,9 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
+import com.carrot.islands.ConfigHandler;
 import com.carrot.islands.DataHandler;
 import com.carrot.islands.LanguageHandler;
 import com.carrot.islands.channel.IslandMessageChannel;
@@ -30,15 +32,24 @@ public class IslandChatExecutor implements CommandExecutor
 				return CommandResult.success();
 			}
 			IslandMessageChannel channel = island.getMessageChannel();
-			
-			if (player.getMessageChannel().equals(channel)) {
-				player.setMessageChannel(MessageChannel.TO_ALL);
-				src.sendMessage(Text.of(TextColors.YELLOW, LanguageHandler.DU));
-			} else {
-				player.setMessageChannel(channel);
-				src.sendMessage(Text.of(TextColors.YELLOW, LanguageHandler.DT));
+
+			if (!ctx.<String>getOne("msg").isPresent())
+			{
+				if (player.getMessageChannel().equals(channel)) {
+					player.setMessageChannel(MessageChannel.TO_ALL);
+					src.sendMessage(Text.of(TextColors.YELLOW, LanguageHandler.DU));
+				} else {
+					player.setMessageChannel(channel);
+					src.sendMessage(Text.of(TextColors.YELLOW, LanguageHandler.DT));
+				}
 			}
-			
+			else
+			{
+				Text header = TextSerializers.FORMATTING_CODE.deserialize(ConfigHandler.getNode("others", "islandChatFormat").getString().replaceAll("\\{ISLAND\\}", island.getTag()).replaceAll("\\{TITLE\\}", DataHandler.getCitizenTitle(player.getUniqueId())));
+				Text msg = Text.of(header, TextColors.RESET, player.getName(), TextColors.WHITE, ": ", TextColors.YELLOW, ctx.<String>getOne("msg").get());
+				channel.send(player, msg);
+				DataHandler.getSpyChannel().send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(ConfigHandler.getNode("others", "islandSpyChatTag").getString()), TextColors.RESET, msg));
+			}
 		}
 		else
 		{

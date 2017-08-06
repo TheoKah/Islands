@@ -1,8 +1,6 @@
 package com.carrot.islands;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -18,21 +16,18 @@ import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.world.gen.WorldGeneratorModifier;
-import org.spongepowered.api.world.storage.WorldProperties;
 
 import com.carrot.islands.cmdelement.BiomeNameElement;
 import com.carrot.islands.cmdelement.CitizenNameElement;
 import com.carrot.islands.cmdelement.IslandNameElement;
 import com.carrot.islands.cmdelement.PlayerNameElement;
 import com.carrot.islands.cmdelement.WorldNameElement;
-import com.carrot.islands.cmdelement.ZoneNameElement;
 import com.carrot.islands.cmdexecutor.island.IslandBiomeExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandChatExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandCitizenExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandCreateExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandDelspawnExecutor;
-import com.carrot.islands.cmdexecutor.island.IslandExecutor;
+import com.carrot.islands.cmdexecutor.island.IslandHelpExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandFlagExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandHereExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandHomeExecutor;
@@ -45,12 +40,16 @@ import com.carrot.islands.cmdexecutor.island.IslandListExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandMinisterExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandPermExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandResignExecutor;
+import com.carrot.islands.cmdexecutor.island.IslandSetnameExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandSetspawnExecutor;
+import com.carrot.islands.cmdexecutor.island.IslandSettagExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandSpawnExecutor;
 import com.carrot.islands.cmdexecutor.island.IslandVisitExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminCreateExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminDeleteExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminExecutor;
+import com.carrot.islands.cmdexecutor.islandadmin.IslandadminExtraspawnExecutor;
+import com.carrot.islands.cmdexecutor.islandadmin.IslandadminExtraspawnplayerExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminFlagExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminForcejoinExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminForceleaveExecutor;
@@ -58,6 +57,8 @@ import com.carrot.islands.cmdexecutor.islandadmin.IslandadminPermExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminReloadExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminSetnameExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminSetpresExecutor;
+import com.carrot.islands.cmdexecutor.islandadmin.IslandadminSettagExecutor;
+import com.carrot.islands.cmdexecutor.islandadmin.IslandadminSpyExecutor;
 import com.carrot.islands.cmdexecutor.islandadmin.IslandadminTemplateExecutor;
 import com.carrot.islands.cmdexecutor.islandworld.IslandworldDisableExecutor;
 import com.carrot.islands.cmdexecutor.islandworld.IslandworldEnableExecutor;
@@ -78,6 +79,7 @@ import com.carrot.islands.cmdexecutor.zone.ZonePermExecutor;
 import com.carrot.islands.cmdexecutor.zone.ZoneRenameExecutor;
 import com.carrot.islands.cmdexecutor.zone.ZoneSetownerExecutor;
 import com.carrot.islands.listener.BuildPermListener;
+import com.carrot.islands.listener.ChatListener;
 import com.carrot.islands.listener.ExplosionListener;
 import com.carrot.islands.listener.FireListener;
 import com.carrot.islands.listener.GoldenAxeListener;
@@ -91,26 +93,26 @@ import com.carrot.islands.service.IslandsService;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
-@Plugin(id = "islands", name = "Islands", version = "1.2", authors={"Carrot"}, description = "Just a simple island manager")
+@Plugin(id = "islands", name = "Islands", version = "1.4", authors={"Carrot"}, description = "Just a simple island manager and protection plugin")
 public class IslandsPlugin
 {
 	private File rootDir;
 
 	private static IslandsPlugin plugin;
-	
+
 	@Inject
 	private Logger logger;
 
 	@Inject
 	@ConfigDir(sharedRoot = true)
 	private File defaultConfigDir;
-	
+
 	@Inject
 	private PluginContainer pluginContainer;
-    public PluginContainer getPluginContainer() {
-        return pluginContainer;
-    }
-	
+	public PluginContainer getPluginContainer() {
+		return pluginContainer;
+	}
+
 	@Listener
 	public void onInit(GameInitializationEvent event)
 	{
@@ -138,14 +140,14 @@ public class IslandsPlugin
 				.arguments()
 				.executor(new IslandadminReloadExecutor())
 				.build();
-		
+
 		CommandSpec islandadminCreateCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.create")
 				.arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
 				.executor(new IslandadminCreateExecutor())
 				.build();
-		
+
 		CommandSpec islandadminSetpresCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.setpres")
@@ -163,6 +165,15 @@ public class IslandsPlugin
 						GenericArguments.optional(GenericArguments.string(Text.of("newname"))))
 				.executor(new IslandadminSetnameExecutor())
 				.build();
+		
+		CommandSpec islandadminSettagCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.islandadmin.settag")
+				.arguments(
+						GenericArguments.optional(new IslandNameElement(Text.of("island"))),
+						GenericArguments.optional(GenericArguments.string(Text.of("tag"))))
+				.executor(new IslandadminSettagExecutor())
+				.build();
 
 		CommandSpec islandadminForcejoinCmd = CommandSpec.builder()
 				.description(Text.of(""))
@@ -172,21 +183,21 @@ public class IslandsPlugin
 						GenericArguments.optional(new PlayerNameElement(Text.of("player"))))
 				.executor(new IslandadminForcejoinExecutor())
 				.build();
-		
+
 		CommandSpec islandadminForceleaveCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.forceleave")
 				.arguments(GenericArguments.optional(new PlayerNameElement(Text.of("player"))))
 				.executor(new IslandadminForceleaveExecutor())
 				.build();
-		
+
 		CommandSpec islandadminDeleteCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.delete")
 				.arguments(GenericArguments.optional(new IslandNameElement(Text.of("island"))))
 				.executor(new IslandadminDeleteExecutor())
 				.build();
-		
+
 		CommandSpec islandadminFlagCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.flag")
@@ -201,7 +212,7 @@ public class IslandsPlugin
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new IslandadminFlagExecutor())
 				.build();
-		
+
 		CommandSpec islandadminPermCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.perm")
@@ -209,26 +220,64 @@ public class IslandsPlugin
 						GenericArguments.optional(new IslandNameElement(Text.of("island"))),
 						GenericArguments.optional(GenericArguments.choices(Text.of("type"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.TYPE_OUTSIDER, Island.TYPE_OUTSIDER)
-										.put(Island.TYPE_CITIZEN, Island.TYPE_CITIZEN)
-										.put(Island.TYPE_COOWNER, Island.TYPE_COOWNER)
-										.build())),
+								.put(Island.TYPE_OUTSIDER, Island.TYPE_OUTSIDER)
+								.put(Island.TYPE_CITIZEN, Island.TYPE_CITIZEN)
+								.put(Island.TYPE_COOWNER, Island.TYPE_COOWNER)
+								.build())),
 						GenericArguments.optional(GenericArguments.choices(Text.of("perm"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.PERM_BUILD, Island.PERM_BUILD)
-										.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
-										.build())),
+								.put(Island.PERM_BUILD, Island.PERM_BUILD)
+								.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
+								.build())),
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new IslandadminPermExecutor())
 				.build();
-	
+
 		CommandSpec islandadminTemplateCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.template")
 				.arguments()
 				.executor(new IslandadminTemplateExecutor())
 				.build();
-		
+
+		CommandSpec islandadminSpyCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.islandadmin.spy")
+				.arguments()
+				.executor(new IslandadminSpyExecutor())
+				.build();
+
+		CommandSpec islandadminExtraspawnCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.islandadmin.extraspawn")
+				.arguments(
+						GenericArguments.optional(GenericArguments.choices(Text.of("give|take|set"),
+								ImmutableMap.<String, String> builder()
+								.put("give", "give")
+								.put("take", "take")
+								.put("set", "set")
+								.build())),
+						GenericArguments.optional(new IslandNameElement(Text.of("island"))),
+						GenericArguments.optional(GenericArguments.integer(Text.of("amount"))))
+				.executor(new IslandadminExtraspawnExecutor())
+				.build();
+
+		CommandSpec islandadminExtraspawnplayerCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.islandadmin.extraspawnplayer")
+				.arguments(
+						GenericArguments.optional(GenericArguments.choices(Text.of("give|take|set"),
+								ImmutableMap.<String, String> builder()
+								.put("give", "give")
+								.put("take", "take")
+								.put("set", "set")
+								.build())),
+						GenericArguments.optional(new PlayerNameElement(Text.of("player"))),
+						GenericArguments.optional(GenericArguments.integer(Text.of("amount"))))
+				.executor(new IslandadminExtraspawnplayerExecutor())
+				.build();
+
+
 		CommandSpec islandadminCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandadmin.execute")
@@ -236,13 +285,17 @@ public class IslandsPlugin
 				.child(islandadminReloadCmd, "reload")
 				.child(islandadminCreateCmd, "create")
 				.child(islandadminSetpresCmd, "setpres", "setpresident")
-				.child(islandadminSetnameCmd, "setname")
+				.child(islandadminSetnameCmd, "setname", "rename")
+				.child(islandadminSettagCmd, "settag", "tag")
 				.child(islandadminForcejoinCmd, "forcejoin")
 				.child(islandadminForceleaveCmd, "forceleave")
 				.child(islandadminDeleteCmd, "delete")
 				.child(islandadminFlagCmd, "flag")
 				.child(islandadminPermCmd, "perm")
 				.child(islandadminTemplateCmd, "template")
+				.child(islandadminSpyCmd, "spy", "spychat")
+				.child(islandadminExtraspawnCmd, "extraspawn")
+				.child(islandadminExtraspawnplayerCmd, "extraspawnplayer")
 				.build();
 
 		CommandSpec islandInfoCmd = CommandSpec.builder()
@@ -250,6 +303,13 @@ public class IslandsPlugin
 				.permission("islands.command.island.info")
 				.arguments(GenericArguments.optional(new IslandNameElement(Text.of("island"))))
 				.executor(new IslandInfoExecutor())
+				.build();
+
+		CommandSpec islandHelpCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.island.help")
+				.arguments()
+				.executor(new IslandHelpExecutor())
 				.build();
 
 		CommandSpec islandHereCmd = CommandSpec.builder()
@@ -322,7 +382,7 @@ public class IslandsPlugin
 				.arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
 				.executor(new IslandSpawnExecutor())
 				.build();
-		
+
 		CommandSpec islandHomeCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.island.home")
@@ -344,6 +404,19 @@ public class IslandsPlugin
 				.executor(new IslandDelspawnExecutor())
 				.build();
 
+		CommandSpec islandSetnameCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.island.setname")
+				.arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
+				.executor(new IslandSetnameExecutor())
+				.build();
+
+		CommandSpec islandSettagCmd = CommandSpec.builder()
+				.description(Text.of(""))
+				.permission("islands.command.island.settag")
+				.arguments(GenericArguments.optional(GenericArguments.string(Text.of("tag"))))
+				.executor(new IslandSettagExecutor())
+				.build();
 
 		CommandSpec islandMinisterCmd = CommandSpec.builder()
 				.description(Text.of(""))
@@ -351,9 +424,9 @@ public class IslandsPlugin
 				.arguments(
 						GenericArguments.optional(GenericArguments.choices(Text.of("add|remove"),
 								ImmutableMap.<String, String> builder()
-										.put("add", "add")
-										.put("remove", "remove")
-										.build())),
+								.put("add", "add")
+								.put("remove", "remove")
+								.build())),
 						GenericArguments.optional(new CitizenNameElement(Text.of("citizen"))))
 				.executor(new IslandMinisterExecutor())
 				.build();
@@ -364,14 +437,14 @@ public class IslandsPlugin
 				.arguments(
 						GenericArguments.choices(Text.of("type"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.TYPE_OUTSIDER, Island.TYPE_OUTSIDER)
-										.put(Island.TYPE_CITIZEN, Island.TYPE_CITIZEN)
-										.build()),
+								.put(Island.TYPE_OUTSIDER, Island.TYPE_OUTSIDER)
+								.put(Island.TYPE_CITIZEN, Island.TYPE_CITIZEN)
+								.build()),
 						GenericArguments.choices(Text.of("perm"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.PERM_BUILD, Island.PERM_BUILD)
-										.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
-										.build()),
+								.put(Island.PERM_BUILD, Island.PERM_BUILD)
+								.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
+								.build()),
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new IslandPermExecutor())
 				.build();
@@ -389,14 +462,14 @@ public class IslandsPlugin
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new IslandFlagExecutor())
 				.build();
-		
+
 		CommandSpec islandChatCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.island.chat")
-				.arguments()
+				.arguments(GenericArguments.optional(GenericArguments.remainingJoinedStrings(Text.of("msg"))))
 				.executor(new IslandChatExecutor())
 				.build();
-		
+
 		CommandSpec islandVisitCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.island.visit")
@@ -412,12 +485,13 @@ public class IslandsPlugin
 				.arguments(GenericArguments.optional(new BiomeNameElement(Text.of("biome"))))
 				.executor(new IslandBiomeExecutor())
 				.build();
-		
+
 		CommandSpec islandCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.island.execute")
-				.executor(new IslandExecutor())
+				.executor(new IslandInfoExecutor())
 				.child(islandInfoCmd, "info")
+				.child(islandHelpCmd, "help", "?")
 				.child(islandHereCmd, "here", "h")
 				.child(islandListCmd, "list", "l")
 				.child(islandCitizenCmd, "citizen", "whois")
@@ -427,6 +501,8 @@ public class IslandsPlugin
 				.child(islandKickCmd, "kick")
 				.child(islandLeaveCmd, "leave", "quit")
 				.child(islandResignCmd, "resign")
+				.child(islandSetnameCmd, "setname", "rename")
+				.child(islandSettagCmd, "settag", "tag")
 				.child(islandSpawnCmd, "spawn")
 				.child(islandHomeCmd, "home")
 				.child(islandSetspawnCmd, "setspawn")
@@ -434,7 +510,7 @@ public class IslandsPlugin
 				.child(islandMinisterCmd, "minister")
 				.child(islandPermCmd, "perm")
 				.child(islandFlagCmd, "flag")
-				.child(islandChatCmd, "chat", "c")
+				.child(islandChatCmd, "chat", "c", "islandchat", "ic")
 				.child(islandVisitCmd, "visit")
 				.child(islandBiomeCmd, "biome")
 				.build();
@@ -465,7 +541,7 @@ public class IslandsPlugin
 		CommandSpec zoneDeleteCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.zone.delete")
-				.arguments(GenericArguments.optional(new ZoneNameElement(Text.of("zone"))))
+				.arguments()
 				.executor(new ZoneDeleteExecutor())
 				.build();
 
@@ -475,9 +551,9 @@ public class IslandsPlugin
 				.arguments(
 						GenericArguments.optional(GenericArguments.choices(Text.of("add|remove"),
 								ImmutableMap.<String, String> builder()
-										.put("add", "add")
-										.put("remove", "remove")
-										.build())),
+								.put("add", "add")
+								.put("remove", "remove")
+								.build())),
 						GenericArguments.optional(new PlayerNameElement(Text.of("citizen"))))
 				.executor(new ZoneCoownerExecutor())
 				.build();
@@ -495,7 +571,7 @@ public class IslandsPlugin
 				.arguments()
 				.executor(new ZoneDelownerExecutor())
 				.build();
-		
+
 		CommandSpec zoneRenameCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.zone.rename")
@@ -509,15 +585,15 @@ public class IslandsPlugin
 				.arguments(
 						GenericArguments.choices(Text.of("type"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.TYPE_OUTSIDER, Island.TYPE_OUTSIDER)
-										.put(Island.TYPE_CITIZEN, Island.TYPE_CITIZEN)
-										.put(Island.TYPE_COOWNER, Island.TYPE_COOWNER)
-										.build()),
+								.put(Island.TYPE_OUTSIDER, Island.TYPE_OUTSIDER)
+								.put(Island.TYPE_CITIZEN, Island.TYPE_CITIZEN)
+								.put(Island.TYPE_COOWNER, Island.TYPE_COOWNER)
+								.build()),
 						GenericArguments.choices(Text.of("perm"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.PERM_BUILD, Island.PERM_BUILD)
-										.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
-										.build()),
+								.put(Island.PERM_BUILD, Island.PERM_BUILD)
+								.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
+								.build()),
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new ZonePermExecutor())
 				.build();
@@ -565,14 +641,14 @@ public class IslandsPlugin
 				.arguments()
 				.executor(new IslandworldListExecutor())
 				.build();
-		
+
 		CommandSpec worldEnableCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandworld.enable")
 				.arguments(GenericArguments.optional(new WorldNameElement(Text.of("world"))))
 				.executor(new IslandworldEnableExecutor())
 				.build();
-		
+
 		CommandSpec worldDisableCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandworld.disable")
@@ -586,9 +662,9 @@ public class IslandsPlugin
 				.arguments(
 						GenericArguments.choices(Text.of("perm"),
 								ImmutableMap.<String, String> builder()
-										.put(Island.PERM_BUILD, Island.PERM_BUILD)
-										.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
-										.build()),
+								.put(Island.PERM_BUILD, Island.PERM_BUILD)
+								.put(Island.PERM_INTERACT, Island.PERM_INTERACT)
+								.build()),
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new IslandworldPermExecutor())
 				.build();
@@ -606,19 +682,19 @@ public class IslandsPlugin
 						GenericArguments.optional(GenericArguments.bool(Text.of("bool"))))
 				.executor(new IslandworldFlagExecutor())
 				.build();
-		
+
 		CommandSpec debugFlagCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandworld.debug")
 				.arguments(
 						GenericArguments.optional(GenericArguments.choices(Text.of("start|stop"),
 								ImmutableMap.<String, String> builder()
-										.put("start", "start")
-										.put("stop", "stop")
-										.build())))
+								.put("start", "start")
+								.put("stop", "stop")
+								.build())))
 				.executor(new Debugger.CmdExecutor())
 				.build();
-		
+
 		CommandSpec islandworldCmd = CommandSpec.builder()
 				.description(Text.of(""))
 				.permission("islands.command.islandworld.execute")
@@ -646,44 +722,9 @@ public class IslandsPlugin
 		Sponge.getEventManager().registerListeners(this, new MobSpawningListener());
 		Sponge.getEventManager().registerListeners(this, new BuildPermListener());
 		Sponge.getEventManager().registerListeners(this, new InteractPermListener());
+		Sponge.getEventManager().registerListeners(this, new ChatListener());
 
 		logger.info("Plugin ready");
-		
-		System.out.println("OVERWORLD START");
-		Optional<WorldProperties> wpOvwd = Sponge.getServer().getWorldProperties("world");
-		if (wpOvwd.isPresent()) {
-			System.out.println("Generator Type: " + wpOvwd.get().getGeneratorType());
-			System.out.println("Generator Settings: " + wpOvwd.get().getGeneratorSettings());
-			Collection<WorldGeneratorModifier> modifiers = wpOvwd.get().getGeneratorModifiers();
-			for (WorldGeneratorModifier mod : modifiers) {
-				System.out.println("Generator Modifiers: " + mod.getName());
-			}
-		}
-		System.out.println("OVERWORLD END");
-		
-		System.out.println("END START");
-		Optional<WorldProperties> wpEnd = Sponge.getServer().getWorldProperties("DIM1");
-		if (wpEnd.isPresent()) {
-			System.out.println("Generator Type: " + wpEnd.get().getGeneratorType());
-			System.out.println("Generator Settings: " + wpEnd.get().getGeneratorSettings());
-			Collection<WorldGeneratorModifier> modifiers = wpEnd.get().getGeneratorModifiers();
-			for (WorldGeneratorModifier mod : modifiers) {
-				System.out.println("Generator Modifiers: " + mod.getName());
-			}
-		}
-		System.out.println("END END");
-		
-		System.out.println("NETHER START");
-		Optional<WorldProperties> wpNether = Sponge.getServer().getWorldProperties("DIM-1");
-		if (wpNether.isPresent()) {
-			System.out.println("Generator Type: " + wpNether.get().getGeneratorType());
-			System.out.println("Generator Settings: " + wpNether.get().getGeneratorSettings());
-			Collection<WorldGeneratorModifier> modifiers = wpNether.get().getGeneratorModifiers();
-			for (WorldGeneratorModifier mod : modifiers) {
-				System.out.println("Generator Modifiers: " + mod.getName());
-			}
-		}
-		System.out.println("NETHER END");
 	}
 
 	@Listener

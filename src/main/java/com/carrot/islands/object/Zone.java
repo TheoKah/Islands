@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Map.Entry;
 
 import com.carrot.islands.ConfigHandler;
+import com.carrot.islands.LanguageHandler;
 
 import java.util.UUID;
 
@@ -67,12 +68,24 @@ public class Zone
 
 	public String getName()
 	{
+		if (name == null)
+			return LanguageHandler.HX;
+		return name.replace("_", " ");
+	}
+
+	public String getRealName()
+	{
 		return name;
 	}
 
 	public void setName(String name)
 	{
 		this.name = name;
+	}
+	
+	public boolean isNamed()
+	{
+		return name != null;
 	}
 
 	public UUID getOwner()
@@ -88,6 +101,11 @@ public class Zone
 	public boolean isOwner(UUID uuid)
 	{
 		return owner != null && owner.equals(uuid);
+	}
+	
+	public boolean isOwned()
+	{
+		return owner != null;
 	}
 
 	public ArrayList<UUID> getCoowners()

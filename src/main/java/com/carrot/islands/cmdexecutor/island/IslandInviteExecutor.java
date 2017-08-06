@@ -77,7 +77,7 @@ public class IslandInviteExecutor implements CommandExecutor
 			guestPlayer.sendMessage(Text.builder()
 					.append(Text.of(TextColors.AQUA, str.split("\\{CLICKHERE\\}")[0]))
 					.append(Text.builder(LanguageHandler.JA)
-							.onClick(TextActions.runCommand("/island join " + island.getName()))
+							.onClick(TextActions.runCommand("/island join " + island.getRealName()))
 							.color(TextColors.DARK_AQUA)
 							.build())
 					.append(Text.of(TextColors.AQUA, str.split("\\{CLICKHERE\\}")[1])).build());

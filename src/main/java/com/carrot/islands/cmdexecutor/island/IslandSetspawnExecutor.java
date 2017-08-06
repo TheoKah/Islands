@@ -46,10 +46,10 @@ public class IslandSetspawnExecutor implements CommandExecutor
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.FX));
 				return CommandResult.success();
 			}
-			if (island.getNumSpawns() + 1 > ConfigHandler.getNode("others", "maxIslandSpawns").getInt())
+			if (island.getNumSpawns() + 1 > island.getMaxSpawns() && !island.getSpawns().containsKey(spawnName))
 			{
 				src.sendMessage(Text.of(TextColors.RED, LanguageHandler.HR
-						.replaceAll("\\{MAX\\}", ConfigHandler.getNode("others", "maxIslandSpawns").getString())));
+						.replaceAll("\\{MAX\\}", String.valueOf(island.getMaxSpawns()))));
 				return CommandResult.success();
 			}
 			if (!spawnName.matches("[\\p{Alnum}\\p{IsIdeographic}\\p{IsLetter}]{1,30}"))
