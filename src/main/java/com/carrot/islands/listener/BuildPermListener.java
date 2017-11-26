@@ -12,6 +12,8 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import com.carrot.islands.ConfigHandler;
 import com.carrot.islands.DataHandler;
@@ -19,7 +21,57 @@ import com.carrot.islands.LanguageHandler;
 
 public class BuildPermListener
 {
-
+	@Listener(order=Order.FIRST, beforeModifications = true)
+	public void onPlayerPlacesBlock(ChangeBlockEvent.Modify event, @First Player player)
+	{
+		if (!ConfigHandler.getNode("worlds").getNode(event.getTargetWorld().getName()).getNode("enabled").getBoolean())
+		{
+			return;
+		}
+		if (player.hasPermission("islands.admin.bypass.perm.build"))
+		{
+			return;
+		}
+		event
+		.getTransactions()
+		.stream()
+		.forEach(trans -> trans.getOriginal().getLocation().ifPresent(loc -> {
+			if (!DataHandler.getPerm("build", player.getUniqueId(), loc))
+			{
+				trans.setValid(false);
+				try {
+					player.sendMessage(Text.of(TextColors.RED, LanguageHandler.HH));
+				} catch (Exception e) {}
+			}
+		}));
+	}
+	
+	@Listener(order=Order.FIRST, beforeModifications = true)
+	public void onPlayerChangeBlock(ChangeBlockEvent.Pre event, @First Player player)
+	{
+		if (!ConfigHandler.getNode("worlds").getNode(event.getTargetWorld().getName()).getNode("enabled").getBoolean())
+		{
+			return;
+		}
+		if (player.hasPermission("islands.admin.bypass.perm.build"))
+		{
+			return;
+		}
+		if (DataHandler.isFakePlayer(player)) {
+			return;
+		}
+		for (Location<World> loc : event.getLocations()) {
+			if (!DataHandler.getPerm("build", player.getUniqueId(), loc))
+			{
+				event.setCancelled(true);
+				try {
+					player.sendMessage(Text.of(TextColors.RED, LanguageHandler.HH));
+				} catch (Exception e) {}
+				return;
+			}
+		}
+	}
+	
 	@Listener(order=Order.FIRST, beforeModifications = true)
 	public void onPlayerPlacesBlock(ChangeBlockEvent.Place event, @First Player player)
 	{

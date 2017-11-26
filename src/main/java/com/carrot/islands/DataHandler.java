@@ -68,6 +68,11 @@ public class DataHandler
 	private static ArrayList<BiomeType> biomes;
 	private static IslandMessageChannel spyChannel;
 
+	private static final String[] FAKE_PLAYERS = {
+			"00000000-0000-0000-0000-000000000000",
+			"0d0c4ca0-4ff1-11e4-916c-0800200c9a66",
+			"41c82c87-7afb-4024-ba57-13d2c99cae77"};
+	
 	public static void init(File rootDir)
 	{
 		biomes = new ArrayList<BiomeType>();
@@ -457,7 +462,16 @@ public class DataHandler
 			}
 		}	
 	}
-
+	
+	public static boolean isFakePlayer(Player player) {
+		String uuid = player.getUniqueId().toString();
+		for (int i = 0; i < FAKE_PLAYERS.length; ++i) {
+			if (uuid.equals(FAKE_PLAYERS[i]))
+				return true;
+		}
+		return false;
+	}
+	
 	// lastIslandWalkedOn
 
 	public static Island getLastIslandWalkedOn(UUID uuid)

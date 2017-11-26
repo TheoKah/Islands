@@ -173,7 +173,7 @@ public class Island
 
 	public int getMaxSpawns()
 	{
-		return ConfigHandler.getNode("others", "maxNationSpawns").getInt() + extraspawns;
+		return ConfigHandler.getNode("others", "maxIslandSpawns").getInt() + extraspawns;
 	}
 
 	public int getExtraSpawns()
