@@ -1,24 +1,11 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
-
-targetCompatibility = "1.8"
-sourceCompatibility = "1.8"
-version = '1.5'
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'Islands',
-                   'Implementation-Version': version
-    }
+plugins {
+    id 'org.spongepowered.plugin' version '0.8.1'
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        name = 'sponge'
-        url = 'http://repo.spongepowered.org/maven'
-    }
-}
+group = 'com.carrot'
+version = '1.6-S5.1-MC1.10.2'
+description = 'Just a simple island manager and protection plugin'
 
 dependencies {
-	compile 'org.spongepowered:spongeapi:5.1.0'
+    compile 'org.spongepowered:spongeapi:5.1.0'
 }

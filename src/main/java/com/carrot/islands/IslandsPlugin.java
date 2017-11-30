@@ -93,7 +93,7 @@ import com.carrot.islands.service.IslandsService;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
-@Plugin(id = "islands", name = "Islands", version = "1.4", authors={"Carrot"}, description = "Just a simple island manager and protection plugin")
+@Plugin(id = "islands", name = "Islands", authors={"Carrot"})
 public class IslandsPlugin
 {
 	private File rootDir;
