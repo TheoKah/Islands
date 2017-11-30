@@ -19,6 +19,7 @@ import org.spongepowered.api.world.World;
 
 import com.carrot.islands.DataHandler;
 import com.carrot.islands.LanguageHandler;
+import com.carrot.islands.Utils;
 import com.carrot.islands.IslandsPlugin;
 import com.carrot.islands.event.PlayerTeleportEvent;
 import com.carrot.islands.object.Island;
@@ -49,7 +50,7 @@ public class IslandHomeExecutor implements CommandExecutor
 				Sponge.getEventManager().post(event);
 				if (!event.isCancelled())
 				{
-					player.setLocation(spawn);
+					Utils.safeTP(player, spawn);
 					src.sendMessage(Text.of(TextColors.AQUA, LanguageHandler.GC));
 				}
 				return CommandResult.success();
@@ -68,7 +69,7 @@ public class IslandHomeExecutor implements CommandExecutor
 					Sponge.getEventManager().post(event);
 					if (!event.isCancelled())
 					{
-						player.setLocation(spawn);
+						Utils.safeTP(player, spawn);
 						src.sendMessage(Text.of(TextColors.AQUA, LanguageHandler.GC));
 					}
 				}

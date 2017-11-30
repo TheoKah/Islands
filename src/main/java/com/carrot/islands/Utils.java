@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.LiteralText.Builder;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -23,6 +25,7 @@ import org.spongepowered.api.world.World;
 import com.carrot.islands.object.Island;
 import com.carrot.islands.object.Rect;
 import com.carrot.islands.object.Zone;
+import com.flowpowered.math.vector.Vector3i;
 
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 
@@ -37,6 +40,16 @@ public class Utils
 	public static String locToString(Location<World> loc)
 	{
 		return loc.getExtent().getName() + "|" + loc.getX() + "|" + loc.getY() + "|" + loc.getZ();
+	}
+	
+	public static void safeTP(Player player, Location<World> loc) {
+		while (loc.getBlockY() < 260
+				&& loc.getBlock().getType() != BlockTypes.AIR
+				&& loc.add(new Vector3i(0, 1, 0)).getBlock().getType() != BlockTypes.AIR
+				&& loc.add(new Vector3i(0, 2, 0)).getBlock().getType() != BlockTypes.AIR) {
+			loc = loc.add(new Vector3i(0, 1, 0));
+		}
+		player.setLocation(loc);
 	}
 
 	public static Location<World> locFromString(String str)

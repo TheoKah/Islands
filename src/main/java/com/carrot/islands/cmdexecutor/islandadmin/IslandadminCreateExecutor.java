@@ -16,6 +16,7 @@ import org.spongepowered.api.world.World;
 import com.carrot.islands.ConfigHandler;
 import com.carrot.islands.DataHandler;
 import com.carrot.islands.LanguageHandler;
+import com.carrot.islands.Utils;
 import com.carrot.islands.object.Island;
 import com.carrot.islands.object.Rect;
 
@@ -62,7 +63,7 @@ public class IslandadminCreateExecutor implements CommandExecutor
 			DataHandler.generateIslandTemplate(loc);
 			DataHandler.addIsland(island);
 			DataHandler.addToWorldChunks(island);
-			player.setLocation(loc);
+			Utils.safeTP(player, loc);
 			src.sendMessage(Text.of(TextColors.GREEN, LanguageHandler.HL));
 		}
 		else
