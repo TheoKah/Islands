@@ -25,7 +25,6 @@ import org.spongepowered.api.world.World;
 import com.carrot.islands.object.Island;
 import com.carrot.islands.object.Rect;
 import com.carrot.islands.object.Zone;
-import com.flowpowered.math.vector.Vector3i;
 
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 
@@ -43,11 +42,12 @@ public class Utils
 	}
 	
 	public static void safeTP(Player player, Location<World> loc) {
-		while (loc.getBlockY() < 260
-				&& loc.getBlock().getType() != BlockTypes.AIR
-				&& loc.add(new Vector3i(0, 1, 0)).getBlock().getType() != BlockTypes.AIR
-				&& loc.add(new Vector3i(0, 2, 0)).getBlock().getType() != BlockTypes.AIR) {
-			loc = loc.add(new Vector3i(0, 1, 0));
+		loc = loc.add(0, 1, 0);
+		while (loc.getBlockY() < 260 &&
+				(loc.getBlock().getType() != BlockTypes.AIR
+				|| loc.add(0, 1, 0).getBlock().getType() != BlockTypes.AIR
+				|| loc.add(0, -1, 0).getBlock().getType() != BlockTypes.AIR)) {
+			loc = loc.add(0, 1, 0);
 		}
 		player.setLocation(loc);
 	}
