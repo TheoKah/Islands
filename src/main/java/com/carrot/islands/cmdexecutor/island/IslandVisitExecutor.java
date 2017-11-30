@@ -87,7 +87,7 @@ public class IslandVisitExecutor implements CommandExecutor
 				Sponge.getEventManager().post(event);
 				if (!event.isCancelled())
 				{
-					player.setLocation(spawn);
+					Utils.safeTP(player, spawn);
 					src.sendMessage(Text.of(TextColors.AQUA, LanguageHandler.GC));
 				}
 				return CommandResult.success();
@@ -106,7 +106,7 @@ public class IslandVisitExecutor implements CommandExecutor
 					Sponge.getEventManager().post(event);
 					if (!event.isCancelled())
 					{
-						player.setLocation(spawn);
+						Utils.safeTP(player, spawn);
 						src.sendMessage(Text.of(TextColors.AQUA, LanguageHandler.GC));
 					}
 				}
