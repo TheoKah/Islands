@@ -609,14 +609,14 @@ public class DataHandler
 			for (int x = -2; x <= 2; ++x) {
 				for (int z = -2; z <= 2; ++z) {
 					Location<World> location = new Location<World>(loc.getExtent(), loc.getBlockX() + x, loc.getBlockY() - 1, loc.getBlockZ() + z);
-					location.setBlockType(BlockTypes.DIRT, IslandsPlugin.getCause());
+					location.setBlockType(BlockTypes.DIRT);
 
 				}
 			}
             return ;
         }
 		
-	schematic.apply(loc, BlockChangeFlag.ALL, IslandsPlugin.getCause());
+	schematic.apply(loc, BlockChangeFlag.ALL);
 		
 //		ConfigurationNode template = ConfigHandler.getNode("templates", "island");
 //		if (template.hasListChildren()) {

@@ -30,7 +30,7 @@ public class GoldenAxeListener
 		{
 			return;
 		}
-		if (optItem.get().getItem().equals(ItemTypes.GOLDEN_AXE))
+		if (optItem.get().getType().equals(ItemTypes.GOLDEN_AXE))
 		{
 			event.setCancelled(true);
 			Optional<Location<World>> optLoc = event.getTargetBlock().getLocation();
@@ -60,7 +60,7 @@ public class GoldenAxeListener
 		{
 			return;
 		}
-		if (optItem.get().getItem().equals(ItemTypes.GOLDEN_AXE))
+		if (optItem.get().getType().equals(ItemTypes.GOLDEN_AXE))
 		{
 			event.setCancelled(true);
 			Optional<Location<World>> optLoc = event.getTargetBlock().getLocation();
