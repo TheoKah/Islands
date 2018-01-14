@@ -26,6 +26,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.world.BlockChangeFlag;
+import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.biome.BiomeType;
@@ -616,7 +617,7 @@ public class DataHandler
             return ;
         }
 		
-	schematic.apply(loc, BlockChangeFlag.ALL);
+	schematic.apply(loc, BlockChangeFlags.ALL);
 		
 //		ConfigurationNode template = ConfigHandler.getNode("templates", "island");
 //		if (template.hasListChildren()) {

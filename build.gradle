@@ -7,6 +7,6 @@ version = '1.6-S7.0-MC1.12.1'
 description = 'Just a simple island manager and protection plugin'
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.0.0-20171101.163142-49'
+    compile 'org.spongepowered:spongeapi:7.0.0-20171213.053704-67'
     compile 'com.google.code.gson:gson:2.8.1'
 }
