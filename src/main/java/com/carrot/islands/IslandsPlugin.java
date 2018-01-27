@@ -16,6 +16,7 @@ import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.gen.WorldGeneratorModifier;
 
 import com.carrot.islands.cmdelement.BiomeNameElement;
 import com.carrot.islands.cmdelement.CitizenNameElement;
@@ -78,6 +79,7 @@ import com.carrot.islands.cmdexecutor.zone.ZoneListExecutor;
 import com.carrot.islands.cmdexecutor.zone.ZonePermExecutor;
 import com.carrot.islands.cmdexecutor.zone.ZoneRenameExecutor;
 import com.carrot.islands.cmdexecutor.zone.ZoneSetownerExecutor;
+import com.carrot.islands.generator.VoidNetherWorldGeneratorModifier;
 import com.carrot.islands.listener.BuildPermListener;
 import com.carrot.islands.listener.ChatListener;
 import com.carrot.islands.listener.ExplosionListener;
@@ -123,6 +125,8 @@ public class IslandsPlugin
 		LanguageHandler.init(rootDir);
 		ConfigHandler.init(rootDir);
 		DataHandler.init(rootDir);
+		
+		Sponge.getRegistry().register(WorldGeneratorModifier.class , new VoidNetherWorldGeneratorModifier());
 
 		Sponge.getServiceManager().setProvider(this, IslandsService.class, new IslandsService());
 	}

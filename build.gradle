@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.carrot'
-version = '1.6-S7.0-MC1.12.1'
+version = '1.7-S7.0-MC1.12.1'
 description = 'Just a simple island manager and protection plugin'
 
 dependencies {
